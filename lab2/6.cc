@@ -6,11 +6,11 @@ using namespace std;
 
 template<class T>
 struct cvor {
-    cvor() {cout << "Gen " << toString() << endl;}
+    cvor() {cout << "Generated " << toString() << endl;}
     cvor(T dat) : dat(dat) {cout << "Gen " << toString() << endl;}
     ~cvor() {
         delete nxt;
-        cout << "Dest " << toString() << endl;
+        cout << "Destroyed " << toString() << endl;
     }
     T dat;
     cvor* nxt = nullptr;
@@ -26,8 +26,13 @@ class List {
 
     int size = 0;
     cvor<T>* head = new cvor<T>();
+    
 
 public:
+    
+    ~List() {
+        delete head;
+    }
 
     bool upis (T element) {
         cvor<T>* novi = new cvor<T>(element);
@@ -47,8 +52,8 @@ public:
     void ispis() {
         cvor<T>* iter = head->nxt;
         for ( int i = 0; i < size; i++ ) {
-             cout << iter->toString() << " ";
-             iter = head->nxt;
+             cout << iter->dat << " ";
+             iter = iter->nxt;
         }
         cout << endl;
     }
