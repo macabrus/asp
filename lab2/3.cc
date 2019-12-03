@@ -12,7 +12,7 @@ struct zapis {
     bool operator > (zapis& z) {return sifra > z.sifra;}
     string toString() {
         std::stringstream ss;
-        ss << "Zapis ( Sifra: " << sifra << ", " << "Naziv: " << naziv << " )";
+        ss << "(" << sifra << ", " << naziv << ")";
         return ss.str();
     }
 };
@@ -35,12 +35,12 @@ void obicanBubbleSort (zapis A[], int n, char smjer) {
             }
         }
     }
-    if (smjer) reverse(A, &A[n-1]);
+    if (smjer) reverse(A, &A[n]);
 }
 
 int main () {
     zapis arr[4] = {{4,"a"},{3,"b"},{2,"c"},{1,"d"}};
     printArr(arr,4);
-    obicanBubbleSort(arr,4,0);
+    obicanBubbleSort(arr,4,1);
     printArr(arr,4);
 }

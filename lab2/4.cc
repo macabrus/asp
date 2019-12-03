@@ -1,5 +1,9 @@
-#include <iostream>
+
 #include "../util.h"
+#include <iostream>
+
+#ifndef ZAD_4
+#define ZAD_4
 
 using namespace std;
 
@@ -20,4 +24,4 @@ void spojiPolja(T A[], T B[], T Rez[], int n1, int n2) {
     }
 }
 
-
+#endif

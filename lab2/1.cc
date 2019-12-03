@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 #include "../util.h"
 
 using namespace std;
@@ -21,7 +22,7 @@ struct Zapis {
 
     string toString() {
         std::stringstream ss;
-        ss << "Zapis ( Broj: " << broj << ", " << "Mjesto: " << mjesto;
+        ss << "(" << broj << ", " << mjesto << ")";
         return ss.str();
     }
 };
@@ -43,11 +44,12 @@ void insertionSort (Zapis A[], int n, char smjer) {
         memmove( &A[j +  1], &A[j], ( i - j ) * sizeof(Zapis) );
         A[j] = tmp;
     }
+    if (smjer) reverse(A, &A[n]);
 }
 
 int main () {
     Zapis arr [5] = {{5,"a"},{3,"b"},{3,"c"},{3,"d"},{3,"e"}};
     printArr(arr,5);
-    insertionSort(arr, 5, 0);
+    insertionSort(arr, 5, 1);
     printArr(arr,5);
 }

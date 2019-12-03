@@ -1,3 +1,6 @@
+#ifndef UTIL_H
+#define UTIL_H
+
 #include <iostream>
 
 using namespace std;
@@ -16,3 +19,5 @@ void inputArr(T* arr, int size) {
 		cin >> *(arr + i);
 	}
 }
+
+#endif
