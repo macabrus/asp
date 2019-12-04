@@ -2,6 +2,7 @@
 #include <sstream>
 #include <algorithm>
 #include "../util.h"
+#include <cstring>
 
 using namespace std;
 
@@ -16,8 +17,8 @@ struct Zapis {
         return broj < z2.broj;
     }
     
-    bool operator > (Zapis& z2) {
-        return broj > z2.broj;
+    bool operator >= (Zapis& z2) {
+        return broj >= z2.broj;
     }
 
     string toString() {
@@ -34,22 +35,23 @@ std::ostream& operator << (std::ostream& os, Zapis& z) {
 
 void insertionSort (Zapis A[], int n, char smjer) {
     for ( int i = 1; i < n; i++ ) {
-        int j = i;
-        while( --j > 0) { 
-            if ( A[i] > A[j] ) {
-                break;
-            }
+        int j = i - 1;
+        while( j >= 0 && A[i] < A[j]) {
+            j--;
         }
+        cout << i << " " << j << endl;
         Zapis tmp = A[i];
-        memmove( &A[j +  1], &A[j], ( i - j ) * sizeof(Zapis) );
-        A[j] = tmp;
+        if (i - j - 1 != 0) {
+            memmove( &A[j + 2], &A[j + 1], ( i - j - 1) * sizeof(Zapis) );
+        }
+        A[j + 1] = tmp;
     }
     if (smjer) reverse(A, &A[n]);
 }
 
 int main () {
-    Zapis arr [5] = {{5,"a"},{3,"b"},{3,"c"},{3,"d"},{3,"e"}};
-    printArr(arr,5);
-    insertionSort(arr, 5, 1);
-    printArr(arr,5);
+    Zapis arr [4] = {{5,"a"},{3,"b"}, {1,"c"},{4,"d"}};
+    printArr(arr,4);
+    insertionSort(arr, 4, 0);
+    printArr(arr,4);
 }
