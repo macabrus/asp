@@ -29,8 +29,8 @@ void selection2Sort (int A[], int n, char smjer) {
 }
 
 int main () {
-    int arr[3] = {4,1,3};
-    printArr(arr,3);
-    selection2Sort(arr,3,0);
-    printArr(arr,3);
+    int arr[9] = {4,3,6,3,7,8,4,93,2};
+    printArr(arr,9);
+    selection2Sort(arr,9,0);
+    printArr(arr,9);
 }
