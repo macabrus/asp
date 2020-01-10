@@ -8,7 +8,6 @@ template <class T>
 struct Cvor {
 	Cvor(int data) :
 		data(data),
-		prt(nullptr),
 		lch(nullptr),
 		rch(nullptr) {
 		cout << "Creating " << *this << "\n";
@@ -35,98 +34,67 @@ class BinarnoStablo {
 	shared_ptr<Cvor<T>> root = nullptr;
 	
 	// O(log(n))
-	bool add(T data, shared_ptr<Cvor> n) {
+	bool add(T data, shared_ptr<Cvor<T>>& n) {
 		if(data == n->data) {
 			return false;
 		}
 		if(data < n->data) {
 			if(n->lch == nullptr) {
-				n->lch = new Cvor(data);
+				n->lch = shared_ptr<Cvor<T>>(new Cvor<T>(data));
 				return true;
 			}
 			return add(data, n->lch);
 		}
 		if (n->rch == nullptr) {
-			n->rch = new Cvor(data);
+			n->rch = shared_ptr<Cvor<T>>(new Cvor<T>(data));
 			return true;
 		}
 		return add(data, n->rch);
 	}
 	
 	// O(log(n))
-	bool pop(T data, shared_ptr<Cvor> n) {
-		shared_ptr<Cvor> tmp = parentOf(data);
-		// not found
-		if ( tmp->data != data ) {
-			return false;
-		}
-		// leaf
-		if( tmpRoot->lch == nullptr &&
-			tmpRoot->rch == nullptr ) {
-			deleteSubnode(tmpRoot);
-			return true;
-		}
-		// single child
-		if ( tmpRoot->lch == nullptr ) {
-			replaceSubnode(tmpRoot->rch, tmpRoot);
-			return true;
-		}
-		if ( tmpRoot->rch == nullptr ) {
-			replaceSubnode(tmpRoot->lch, tmpRoot);
-			return true;
-		}
-		// both children
-		Cvor<T>* tmp = minVal(tmpRoot->rch);
-		cout << "FOUND MIN SUBNODE " << tmp->data;
-		replaceSubnode(tmpRoot, tmp);
-		return true;
-	}
-
-	// vraca cvor s najmanjom vrijednosti u podstablu
-	Cvor<T>* minVal(Cvor<T>* cvor) {
-		while(cvor->lch != nullptr) {
-			cvor = cvor->lch;
-		}
-		return cvor;
-	}
-	
-	//returns parent of where data is or where data should go...
-	Cvor<T>* parentOf(T data) {
-		if(root == nullptr) {
-			return nullptr;
-		}
-		shared_ptr<Cvor> tmp = root;
-		while(true) {
-			if ((tmp->lch == nullptr && tmp->rch == nullptr)) {
-				break;
+	bool pop(T data, shared_ptr<Cvor<T>>& n) {
+		cout<<"HERE " <<n->data << "\n";
+		if(n) {
+			if ( n->data < data ) {
+				return pop(data, n->rch);
 			}
-			if( (tmp->lch != nullptr && tmp->lch->data == data) ||
-				(tmp->rch != nullptr && tmp->rch->data == data) ) {
-				break;
+			else if (n->data > data) {
+				return pop(data, n->lch);
 			}
-			tmp = (tmp->data > data) ? tmp->lch : tmp->rch;
+			else {
+				if (!n->lch) {
+					n = n->rch;
+				}
+				else if (!n->rch) {
+					n = n->lch;
+				} else {
+					shared_ptr<Cvor<T>> prev = nullptr, tmp = n->lch;
+					while(tmp->rch) {
+						prev = tmp;
+						tmp = tmp->rch;
+					}
+					n->data = tmp->data;
+					if(prev) {
+						prev->rch = tmp->lch;
+					}
+					else {
+						n->lch = tmp->lch;
+					}
+					return true;
+				}
+			}
 		}
-		return tmp;
+		return false;
 	}
 
-	Cvor<T>* find(T data) {
-		shared_ptr<Cvor> tmp = root;
-		while(tmp != nullptr && tmp->data != data) {
-			tmp = (tmp->data > data) ? tmp->lch : tmp->rch;
-		}
-		return tmp;
-	}
-
-	// replaces first node with second node by replacing
-	// all refs inside them
-
-	void print(const std::string& prefix, const Cvor<T>* node, bool isLeft) {
+	void print(const std::string& prefix, const shared_ptr<Cvor<T>> node, bool isLeft) {
 		if( node != nullptr ) {
 			std::cout << prefix;
-			std::cout << (isLeft ? "├─" : "└─" );
+			std::cout << (isLeft ? "├" : "└" );
 			std::cout << node->data << std::endl;
-			print( prefix + (isLeft ? "│ " : "  "), node->lch, true);
-			print( prefix + (isLeft ? "│ " : "  "), node->rch, false);
+			print( prefix + (isLeft ? "│" : " "), node->lch, true);
+			print( prefix + (isLeft ? "│" : " "), node->rch, false);
 		}
 	}
 
@@ -134,7 +102,7 @@ class BinarnoStablo {
 
 	bool insert(T data) {
 		if(root == nullptr) {
-			root = new Cvor(data);
+			root = shared_ptr<Cvor<T>>(new Cvor<T>(data));
 			return true;
 		}
 		return add(data, root);
@@ -155,13 +123,14 @@ class BinarnoStablo {
 
 int main () {
 	BinarnoStablo<int> bs;
-	bs.add(3);
-	bs.add(1);
-	bs.add(4);
-	bs.add(5);
-	bs.add(6);
-	bs.add(2);
-	bs.add(0);
-	bs.pop(3);
-	//bs.print();
+	bs.insert(3);
+	bs.insert(1);
+	bs.insert(4);
+	bs.insert(5);
+	bs.insert(6);
+	bs.insert(2);
+	bs.insert(0);
+	bs.print();
+	bs.remove(3);
+	bs.print();
 }
