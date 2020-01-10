@@ -6,7 +6,6 @@ using namespace std;
 
 template <class T>
 struct Cvor {
-	T data;
 	Cvor(int data) :
 		data(data),
 		prt(nullptr),
@@ -17,16 +16,9 @@ struct Cvor {
 	~Cvor() {
 		cout << "Deleting " << *this << "\n";
 	}
-	Cvor* prt;
-	Cvor* lch;
-	Cvor* rch;
-	int which(T data) {
-		if ( lch != nullptr && lch->data == data)
-			return 0;
-		if (rch != nullptr && rch->data == data)
-			return 1;
-		return -1;
-	}
+	T data;
+	shared_ptr<Cvor> lch;
+	shared_ptr<Cvor> rch;
 };
 
 template <class T>
@@ -38,54 +30,34 @@ ostream& operator << (ostream& os, Cvor<T>& c) {
 template <class T>
 class BinarnoStablo {
 	
-	Cvor<T>* root = nullptr;
+	private:
+
+	shared_ptr<Cvor<T>> root = nullptr;
 	
-	public:
-	
-	bool add(T data) {
-		Cvor<T>* c = new Cvor<T>(data);
-		if(root == nullptr) {
-			root = c;
+	// O(log(n))
+	bool add(T data, shared_ptr<Cvor> n) {
+		if(data == n->data) {
+			return false;
+		}
+		if(data < n->data) {
+			if(n->lch == nullptr) {
+				n->lch = new Cvor(data);
+				return true;
+			}
+			return add(data, n->lch);
+		}
+		if (n->rch == nullptr) {
+			n->rch = new Cvor(data);
 			return true;
 		}
-		Cvor<T>* tmpRoot = root;
-		while (true) {
-			if(data == tmpRoot->data) {
-				delete c;
-				return false;
-			}
-			if(data < tmpRoot->data){
-				if (tmpRoot->lch == nullptr) {
-					tmpRoot->lch = c;
-					break;
-				}
-				tmpRoot = tmpRoot->lch;
-				continue;
-			}
-			if(data > tmpRoot->data) {
-				if ( tmpRoot->rch == nullptr ) {
-					tmpRoot->rch = c;
-					break;
-				}
-				tmpRoot = tmpRoot->rch;
-			}
-		}
-		c->prt = tmpRoot;
-		return true;
+		return add(data, n->rch);
 	}
-
-	bool pop(T data) {
-		Cvor<T>* tmpRoot = root;
-		if(root == nullptr) {
-			return false; // tree empty
-		}
-		while ( tmpRoot->data != data &&
-				(tmpRoot->lch != nullptr ||
-				 tmpRoot->rch != nullptr) ) {
-			tmpRoot = (tmpRoot->data > data) ? tmpRoot->lch : tmpRoot->rch;
-		}
+	
+	// O(log(n))
+	bool pop(T data, shared_ptr<Cvor> n) {
+		shared_ptr<Cvor> tmp = parentOf(data);
 		// not found
-		if ( tmpRoot->data != data ) {
+		if ( tmp->data != data ) {
 			return false;
 		}
 		// leaf
@@ -104,53 +76,49 @@ class BinarnoStablo {
 			return true;
 		}
 		// both children
-		Cvor<T>* tmp = minSubnode(tmpRoot);
-		cout << "GOT HERE";
+		Cvor<T>* tmp = minVal(tmpRoot->rch);
+		cout << "FOUND MIN SUBNODE " << tmp->data;
 		replaceSubnode(tmpRoot, tmp);
 		return true;
 	}
 
 	// vraca cvor s najmanjom vrijednosti u podstablu
-	Cvor<T>* minSubnode(Cvor<T>* cvor) {
+	Cvor<T>* minVal(Cvor<T>* cvor) {
 		while(cvor->lch != nullptr) {
 			cvor = cvor->lch;
 		}
 		return cvor;
 	}
-
-	// brise cvor iz stabla
-	void deleteSubnode(Cvor<T>* cvor) {
-		if (cvor != nullptr && cvor->prt != nullptr) {
-			if (cvor->prt->which(cvor->data) == 0) {
-				cvor->prt->lch = nullptr;
-			}
-			else if (cvor->prt->which(cvor->data) == 1) {
-				cvor->prt->rch = nullptr;
-			}
-			delete cvor;
+	
+	//returns parent of where data is or where data should go...
+	Cvor<T>* parentOf(T data) {
+		if(root == nullptr) {
+			return nullptr;
 		}
+		shared_ptr<Cvor> tmp = root;
+		while(true) {
+			if ((tmp->lch == nullptr && tmp->rch == nullptr)) {
+				break;
+			}
+			if( (tmp->lch != nullptr && tmp->lch->data == data) ||
+				(tmp->rch != nullptr && tmp->rch->data == data) ) {
+				break;
+			}
+			tmp = (tmp->data > data) ? tmp->lch : tmp->rch;
+		}
+		return tmp;
 	}
+
+	Cvor<T>* find(T data) {
+		shared_ptr<Cvor> tmp = root;
+		while(tmp != nullptr && tmp->data != data) {
+			tmp = (tmp->data > data) ? tmp->lch : tmp->rch;
+		}
+		return tmp;
+	}
+
 	// replaces first node with second node by replacing
 	// all refs inside them
-	void replaceSubnode(Cvor<T>* c1, Cvor<T>* c2) {
-		if ( c1->prt != nullptr ) {
-			if (c1->prt->which(c1->data) == 0) {
-				c1->prt->lch = c2;
-			}
-			else if (c1->prt->which(c1->data) == 1) {
-				c1->prt->rch = c2;
-			}
-		}
-		c2->lch = c1->lch;
-		c2->rch = c1->rch;
-		if ( c1->rch != nullptr ) {
-			c1->rch->prt = c2;
-		}
-		if (c1->lch != nullptr ) {
-			c1->lch->prt = c2;
-		}
-		delete c1;
-	}
 
 	void print(const std::string& prefix, const Cvor<T>* node, bool isLeft) {
 		if( node != nullptr ) {
@@ -160,6 +128,23 @@ class BinarnoStablo {
 			print( prefix + (isLeft ? "│ " : "  "), node->lch, true);
 			print( prefix + (isLeft ? "│ " : "  "), node->rch, false);
 		}
+	}
+
+	public:
+
+	bool insert(T data) {
+		if(root == nullptr) {
+			root = new Cvor(data);
+			return true;
+		}
+		return add(data, root);
+	}
+	// O(log(n))
+	bool remove(T data) {
+		if(root == nullptr) {
+			return false;
+		}
+		return pop(data, root);
 	}
 
 	void print() {
@@ -178,5 +163,5 @@ int main () {
 	bs.add(2);
 	bs.add(0);
 	bs.pop(3);
-	bs.print();
+	//bs.print();
 }
